@@ -1,0 +1,9 @@
+node_modules
+.next
+out
+.env.local
+.env
+.DS_Store
+*.log
+splitsy-service-account.json
+docker-compose.override.yml

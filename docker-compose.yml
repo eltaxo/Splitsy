@@ -1,0 +1,19 @@
+version: '3.8'
+
+services:
+  splitsy:
+    build: .
+    container_name: splitsy-app
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+    env_file:
+      - .env.production
+    networks:
+      - splitsy-network
+
+networks:
+  splitsy-network:
+    driver: bridge

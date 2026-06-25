@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  .sp-scroll::-webkit-scrollbar{ width:0; height:0; }
+  @keyframes sp-sheet-up { from { transform:translateY(110%); } to { transform:translateY(0); } }
+  @keyframes sp-toast-in { 0%{ transform:translate(-50%,-130%); opacity:0; } 100%{ transform:translate(-50%,0); opacity:1; } }
+  @keyframes sp-pop { 0%{ transform:scale(.4); opacity:0; } 60%{ transform:scale(1.12); } 100%{ transform:scale(1); opacity:1; } }
+  @keyframes sp-confetti { 0%{ transform:translateY(0) rotate(0); opacity:1; } 100%{ transform:translateY(560px) rotate(420deg); opacity:0; } }
+  .sp-key:active{ background:#2E2C22 !important; }
+  .sp-press:active{ transform:scale(.97); }
+</style>
+</helmet>
+<div style="width:414px; background:#050504; border-radius:54px; padding:11px; box-shadow:0 30px 70px -28px rgba(0,0,0,.7), 0 6px 18px rgba(0,0,0,.3); position:relative;">
+  <div class="sp-scroll" style="width:392px; height:844px; background:#15140F; border-radius:44px; overflow:hidden; position:relative; font-family:'Manrope',system-ui,sans-serif; color:#F4F1E8; display:flex; flex-direction:column;">
+
+    <!-- status bar -->
+    <div style="height:52px; flex:0 0 auto; display:flex; align-items:center; justify-content:space-between; padding:0 30px; position:relative; z-index:5;">
+      <span style="font-family:'Sora'; font-weight:600; font-size:15px; letter-spacing:.2px;">9:41</span>
+      <div style="position:absolute; left:50%; top:11px; transform:translateX(-50%); width:104px; height:30px; background:#050504; border-radius:18px;"></div>
+      <div style="display:flex; align-items:center; gap:6px;">
+        <svg width="18" height="12" viewBox="0 0 18 12" fill="none"><rect x="0" y="7" width="3" height="5" rx="1" fill="#F4F1E8"/><rect x="5" y="4.5" width="3" height="7.5" rx="1" fill="#F4F1E8"/><rect x="10" y="2" width="3" height="10" rx="1" fill="#F4F1E8"/><rect x="15" y="0" width="3" height="12" rx="1" fill="#F4F1E8" opacity=".3"/></svg>
+        <svg width="22" height="12" viewBox="0 0 24 12" fill="none"><rect x="1" y="1" width="20" height="10" rx="3" stroke="#F4F1E8" stroke-opacity=".5" stroke-width="1.2"/><rect x="2.6" y="2.6" width="15" height="6.8" rx="1.6" fill="#F4F1E8"/><rect x="22" y="4" width="1.6" height="4" rx="1" fill="#F4F1E8" opacity=".5"/></svg>
+      </div>
+    </div>
+
+    <!-- main scroll -->
+    <div class="sp-scroll" style="flex:1 1 auto; overflow-y:auto; overflow-x:hidden;">
+
+      <!-- ===================== ADD ===================== -->
+      <sc-if value="{{isAdd}}" hint-placeholder-val="{{true}}">
+      <div style="min-height:100%; display:flex; flex-direction:column; padding:6px 22px 0;">
+        <!-- header -->
+        <div style="display:flex; align-items:center; justify-content:space-between; padding:6px 0 10px;">
+          <div style="display:flex; align-items:center; gap:11px;">
+            <div style="width:44px; height:44px; border-radius:14px; background:#C8FF4D; color:#15140F; display:flex; align-items:center; justify-content:center; font-family:'Sora'; font-weight:700; font-size:18px;">{{meInitial}}</div>
+            <div>
+              <div style="font-size:11px; font-weight:600; color:#8E887B; letter-spacing:.3px;">Hola, {{meName}}</div>
+              <div style="font-family:'Sora'; font-weight:700; font-size:17px; line-height:1.1;">Nuevo gasto</div>
+            </div>
+          </div>
+          <div style="display:flex; align-items:center;">
+            <div style="width:38px; height:38px; border-radius:12px; background:#2A2820; color:#F4F1E8; display:flex; align-items:center; justify-content:center; font-family:'Sora'; font-weight:700; font-size:15px; border:2px solid #15140F;">{{partnerInitial}}</div>
+          </div>
+        </div>
+
+        <!-- friday banner -->
+        <sc-if value="{{showFriday}}" hint-placeholder-val="{{false}}">
+          <div onClick="{{goSettle}}" class="sp-press" style="cursor:pointer; display:flex; align-items:center; gap:12px; background:#211F18; border:1px solid #3A4327; border-radius:18px; padding:13px 15px; margin-bottom:14px;">
+            <div style="font-size:20px;">💸</div>
+            <div style="flex:1; line-height:1.3;">
+              <div style="font-weight:700; font-size:13.5px; color:#F4F1E8;">Es viernes</div>
+              <div style="font-size:12.5px; color:#B8B2A4;">{{partnerName}} te debe <span style="color:#C8FF4D; font-weight:700;">{{fridayAmount}} €</span></div>
+            </div>
+            <div style="background:#C8FF4D; color:#15140F; font-weight:700; font-size:12.5px; padding:8px 12px; border-radius:11px; white-space:nowrap;">Liquidar →</div>
+          </div>
+        </sc-if>
+
+        <!-- amount -->
+        <div onClick="{{openKeypad}}" style="cursor:pointer; background:#211F18; border:1px solid #302D24; border-radius:24px; padding:30px 20px 26px; text-align:center; margin-top:4px;">
+          <div style="font-size:11px; font-weight:700; letter-spacing:1.4px; text-transform:uppercase; color:#6B6759; margin-bottom:8px;">Importe</div>
+          <div style="display:flex; align-items:baseline; justify-content:center; gap:6px;">
+            <span style="font-family:'Sora'; font-weight:800; font-size:64px; line-height:1; letter-spacing:-2px; color:{{amountColor}};">{{amountText}}</span>
+            <span style="font-family:'Sora'; font-weight:700; font-size:30px; color:#5E5B50;">€</span>
+          </div>
+          <div style="margin-top:12px; display:inline-flex; align-items:center; gap:6px; font-size:12.5px; font-weight:600; color:#6B6759;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><rect x="4" y="3" width="16" height="18" rx="3" stroke="#6B6759" stroke-width="1.8"/><path d="M8 8h8M8 12h8M8 16h4" stroke="#6B6759" stroke-width="1.8" stroke-linecap="round"/></svg>
+            Toca para escribir
+          </div>
+        </div>
+
+        <!-- concept -->
+        <div style="margin-top:16px;">
+          <input value="{{concept}}" onChange="{{onConcept}}" placeholder="¿En qué lo gastaste?" style="width:100%; box-sizing:border-box; background:#211F18; border:1px solid #302D24; border-radius:16px; padding:15px 16px; font-family:'Manrope'; font-size:15.5px; font-weight:600; color:#F4F1E8; outline:none;" />
+          <div style="display:flex; flex-wrap:wrap; gap:8px; margin-top:12px;">
+            <sc-for list="{{chips}}" as="chip" hint-placeholder-count="6">
+              <div onClick="{{chip.onClick}}" class="sp-press" style="{{chip.style}}">{{chip.emoji}} {{chip.label}}</div>
+            </sc-for>
+          </div>
+        </div>
+
+        <div style="flex:1;"></div>
+
+        <!-- save -->
+        <div style="padding:14px 0 18px;">
+          <div onClick="{{save}}" class="sp-press" style="{{saveStyle}}">{{saveLabel}}</div>
+        </div>
+      </div>
+
+      <!-- keypad sheet -->
+      <sc-if value="{{keypadOpen}}" hint-placeholder-val="{{false}}">
+        <div onClick="{{closeKeypad}}" style="position:absolute; inset:0; z-index:8;"></div>
+        <div style="position:absolute; left:0; right:0; bottom:0; z-index:9; background:#1B1A14; border-radius:28px 28px 0 0; padding:14px 16px 26px; box-shadow:0 -14px 40px -16px rgba(0,0,0,.6); animation:sp-sheet-up .26s cubic-bezier(.2,0,0,1);">
+          <div style="width:44px; height:5px; border-radius:3px; background:#34311F; margin:0 auto 14px;"></div>
+          <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:9px;">
+            <sc-for list="{{keys}}" as="k" hint-placeholder-count="12">
+              <div onClick="{{k.onClick}}" class="sp-key" style="height:58px; border-radius:16px; background:#211F18; display:flex; align-items:center; justify-content:center; font-family:'Sora'; font-weight:600; font-size:24px; color:#F4F1E8; cursor:pointer; user-select:none;">{{k.label}}</div>
+            </sc-for>
+          </div>
+          <div onClick="{{closeKeypad}}" class="sp-press" style="margin-top:11px; height:54px; border-radius:16px; background:#C8FF4D; color:#15140F; display:flex; align-items:center; justify-content:center; font-family:'Sora'; font-weight:700; font-size:16px; cursor:pointer;">Listo</div>
+        </div>
+      </sc-if>
+
+      <!-- toast -->
+      <sc-if value="{{toastOn}}" hint-placeholder-val="{{false}}">
+        <div style="position:absolute; top:64px; left:50%; z-index:20; background:#C8FF4D; color:#15140F; padding:12px 18px; border-radius:14px; font-weight:700; font-size:14px; display:flex; align-items:center; gap:8px; animation:sp-toast-in .3s cubic-bezier(.2,0,0,1); white-space:nowrap;">
+          <span style="display:inline-flex; width:20px; height:20px; border-radius:50%; background:#15140F; color:#C8FF4D; align-items:center; justify-content:center; font-size:12px;">✓</span>
+          Gasto guardado
+        </div>
+      </sc-if>
+      <!-- confetti -->
+      <sc-if value="{{confettiOn}}" hint-placeholder-val="{{false}}">
+        <div style="position:absolute; inset:0; z-index:19; pointer-events:none; overflow:hidden;">
+          <sc-for list="{{confetti}}" as="c" hint-placeholder-count="0">
+            <div style="{{c.style}}"></div>
+          </sc-for>
+        </div>
+      </sc-if>
+      </sc-if>
+
+      <!-- ===================== SUMMARY ===================== -->
+      <sc-if value="{{isSummary}}" hint-placeholder-val="{{false}}">
+      <div style="padding:6px 22px 24px;">
+        <div style="padding:6px 0 16px;">
+          <div style="font-size:12px; font-weight:700; letter-spacing:1px; text-transform:uppercase; color:#6B6759;">Esta semana</div>
+          <div style="font-family:'Sora'; font-weight:700; font-size:26px; line-height:1.1; margin-top:2px;">Resumen</div>
+        </div>
+
+        <!-- two person cards -->
+        <div style="display:flex; gap:12px;">
+          <div style="flex:1; background:#211F18; border:1px solid #302D24; border-radius:20px; padding:16px;">
+            <div style="display:flex; align-items:center; gap:8px; margin-bottom:14px;"><div style="width:30px; height:30px; border-radius:9px; background:#C8FF4D; color:#15140F; display:flex; align-items:center; justify-content:center; font-family:'Sora'; font-weight:700; font-size:13px;">{{meInitial}}</div><span style="font-weight:700; font-size:13px;">{{meName}}</span></div>
+            <div style="font-family:'Sora'; font-weight:800; font-size:24px; letter-spacing:-.5px;">{{meTotal}} €</div>
+          </div>
+          <div style="flex:1; background:#211F18; border:1px solid #302D24; border-radius:20px; padding:16px;">
+            <div style="display:flex; align-items:center; gap:8px; margin-bottom:14px;"><div style="width:30px; height:30px; border-radius:9px; background:#2A2820; color:#F4F1E8; display:flex; align-items:center; justify-content:center; font-family:'Sora'; font-weight:700; font-size:13px;">{{partnerInitial}}</div><span style="font-weight:700; font-size:13px;">{{partnerName}}</span></div>
+            <div style="font-family:'Sora'; font-weight:800; font-size:24px; letter-spacing:-.5px;">{{partnerTotal}} €</div>
+          </div>
+        </div>
+
+        <!-- result -->
+        <div style="background:#0D0C0A; border:1px solid #2A2820; border-radius:22px; padding:22px; margin-top:12px; text-align:center; position:relative; overflow:hidden;">
+          <div style="position:absolute; right:-30px; top:-30px; width:120px; height:120px; border-radius:50%; background:rgba(200,255,77,.13);"></div>
+          <div style="font-size:12px; font-weight:600; color:#B8B2A4; position:relative;">Cuentas de la semana</div>
+          <div style="font-family:'Sora'; font-weight:700; font-size:19px; color:#F4F1E8; margin-top:8px; line-height:1.35; position:relative;">{{debtorName}} le debe<br><span style="font-size:40px; font-weight:800; color:#C8FF4D; letter-spacing:-1px;">{{debtAmount}} €</span><br>a {{creditorName}}</div>
+        </div>
+
+        <!-- expense list -->
+        <div style="margin-top:24px; display:flex; align-items:center; justify-content:space-between;">
+          <div style="font-family:'Sora'; font-weight:700; font-size:16px;">Movimientos</div>
+          <div style="font-size:12px; font-weight:600; color:#8E887B;">{{expenseCount}} gastos</div>
+        </div>
+        <div style="margin-top:12px; display:flex; flex-direction:column; gap:8px;">
+          <sc-for list="{{expenses}}" as="e" hint-placeholder-count="4">
+            <div style="display:flex; align-items:center; gap:12px; background:#211F18; border:1px solid #302D24; border-radius:16px; padding:13px 14px;">
+              <div style="width:40px; height:40px; border-radius:12px; background:#2A2820; display:flex; align-items:center; justify-content:center; font-size:19px;">{{e.emoji}}</div>
+              <div style="flex:1; min-width:0;">
+                <div style="font-weight:700; font-size:14.5px; line-height:1.2;">{{e.concept}}</div>
+                <div style="font-size:12px; color:#8E887B; margin-top:2px;">{{e.who}} · {{e.time}}</div>
+              </div>
+              <div style="font-family:'Sora'; font-weight:700; font-size:16px;">{{e.amount}} €</div>
+            </div>
+          </sc-for>
+        </div>
+
+        <!-- previous weeks -->
+        <div style="margin-top:24px; font-family:'Sora'; font-weight:700; font-size:16px;">Semanas anteriores</div>
+        <div style="margin-top:12px; display:flex; flex-direction:column; gap:8px;">
+          <sc-for list="{{weeks}}" as="w" hint-placeholder-count="2">
+            <div class="sp-press" style="cursor:pointer; display:flex; align-items:center; gap:12px; background:#211F18; border:1px solid #302D24; border-radius:16px; padding:14px;">
+              <div style="flex:1;"><div style="font-weight:700; font-size:14px;">{{w.label}}</div><div style="font-size:12px; color:#8E887B; margin-top:1px;">{{w.sub}}</div></div>
+              <div style="{{w.badge}}">{{w.status}}</div>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+      </sc-if>
+
+      <!-- ===================== SUMMARY SETTLED (al día) ===================== -->
+      <sc-if value="{{isSummarySettled}}" hint-placeholder-val="{{false}}">
+      <div style="padding:6px 22px 24px;">
+        <div style="padding:6px 0 16px;"><div style="font-size:12px; font-weight:700; letter-spacing:1px; text-transform:uppercase; color:#6B6759;">Esta semana</div><div style="font-family:'Sora'; font-weight:700; font-size:26px; margin-top:2px;">Resumen</div></div>
+        <div style="background:#16251B; border:1px solid #234430; border-radius:24px; padding:34px 22px; text-align:center;">
+          <div style="font-size:46px;">🎉</div>
+          <div style="font-family:'Sora'; font-weight:800; font-size:26px; color:#5FE39A; margin-top:8px;">¡Estáis al día!</div>
+          <div style="font-size:14px; color:#86C9A2; font-weight:600; margin-top:6px;">Ninguno debe nada esta semana</div>
+        </div>
+        <div style="display:flex; gap:12px; margin-top:16px;">
+          <div style="flex:1; background:#211F18; border:1px solid #302D24; border-radius:20px; padding:16px;"><div style="display:flex; align-items:center; gap:8px; margin-bottom:12px;"><div style="width:30px; height:30px; border-radius:9px; background:#C8FF4D; color:#15140F; display:flex; align-items:center; justify-content:center; font-family:'Sora'; font-weight:700; font-size:13px;">{{meInitial}}</div><span style="font-weight:700; font-size:13px;">{{meName}}</span></div><div style="font-family:'Sora'; font-weight:800; font-size:23px;">86,40 €</div></div>
+          <div style="flex:1; background:#211F18; border:1px solid #302D24; border-radius:20px; padding:16px;"><div style="display:flex; align-items:center; gap:8px; margin-bottom:12px;"><div style="width:30px; height:30px; border-radius:9px; background:#2A2820; color:#F4F1E8; display:flex; align-items:center; justify-content:center; font-family:'Sora'; font-weight:700; font-size:13px;">{{partnerInitial}}</div><span style="font-weight:700; font-size:13px;">{{partnerName}}</span></div><div style="font-family:'Sora'; font-weight:800; font-size:23px;">86,40 €</div></div>
+        </div>
+      </div>
+      </sc-if>
+
+      <!-- ===================== SUMMARY EMPTY ===================== -->
+      <sc-if value="{{isSummaryEmpty}}" hint-placeholder-val="{{false}}">
+      <div style="padding:6px 22px;">
+        <div style="padding:6px 0 16px;"><div style="font-size:12px; font-weight:700; letter-spacing:1px; text-transform:uppercase; color:#6B6759;">Esta semana</div><div style="font-family:'Sora'; font-weight:700; font-size:26px; margin-top:2px;">Resumen</div></div>
+        <div style="margin-top:70px; text-align:center; padding:0 14px;">
+          <div style="width:96px; height:96px; border-radius:30px; background:#211F18; border:1px solid #302D24; display:flex; align-items:center; justify-content:center; margin:0 auto; font-size:42px;">🧾</div>
+          <div style="font-family:'Sora'; font-weight:700; font-size:20px; margin-top:20px;">Aún no hay gastos</div>
+          <div style="font-size:14.5px; color:#8E887B; margin-top:8px; line-height:1.5;">Esta semana empieza limpia.<br>¡Empezad a apuntar! 🙌</div>
+          <div onClick="{{goAdd}}" class="sp-press" style="cursor:pointer; display:inline-flex; margin-top:22px; background:#C8FF4D; color:#15140F; font-family:'Sora'; font-weight:700; font-size:15px; padding:14px 24px; border-radius:15px;">Añadir primer gasto</div>
+        </div>
+      </div>
+      </sc-if>
+
+      <!-- ===================== SETTLE: PAYER ===================== -->
+      <sc-if value="{{isSettlePayer}}" hint-placeholder-val="{{false}}">
+      <div style="min-height:100%; display:flex; flex-direction:column; padding:6px 22px 0;">
+        <div style="padding:6px 0 4px;"><div style="font-family:'Sora'; font-weight:700; font-size:26px;">Toca liquidar</div><div style="font-size:14px; color:#8E887B; font-weight:600; margin-top:3px;">Cerramos la semana 💪</div></div>
+        <div style="background:#211F18; border:1px solid #302D24; border-radius:18px; padding:16px; margin-top:18px;">
+          <div style="display:flex; justify-content:space-between; padding:4px 0;"><span style="color:#8E887B; font-weight:600; font-size:14px;">Tú gastaste</span><span style="font-family:'Sora'; font-weight:700; font-size:15px;">52,00 €</span></div>
+          <div style="height:1px; background:#302D24; margin:4px 0;"></div>
+          <div style="display:flex; justify-content:space-between; padding:4px 0;"><span style="color:#8E887B; font-weight:600; font-size:14px;">{{partnerName}} gastó</span><span style="font-family:'Sora'; font-weight:700; font-size:15px;">121,00 €</span></div>
+        </div>
+        <div style="background:#0D0C0A; border:1px solid #2A2820; border-radius:24px; padding:30px 22px; margin-top:14px; text-align:center; position:relative; overflow:hidden;">
+          <div style="position:absolute; left:-30px; bottom:-40px; width:130px; height:130px; border-radius:50%; background:rgba(200,255,77,.13);"></div>
+          <div style="font-size:12px; font-weight:700; letter-spacing:1px; text-transform:uppercase; color:#B8B2A4; position:relative;">Tienes que enviar</div>
+          <div style="font-family:'Sora'; font-weight:800; font-size:58px; color:#C8FF4D; line-height:1; margin-top:8px; letter-spacing:-2px; position:relative;">34,50 €</div>
+          <div style="font-size:14px; color:#B8B2A4; font-weight:600; margin-top:12px; position:relative;">Haz un Bizum a {{partnerName}}</div>
+        </div>
+        <div style="flex:1;"></div>
+        <div style="padding:16px 0 8px;">
+          <div onClick="{{settleSent}}" class="sp-press" style="cursor:pointer; height:58px; border-radius:18px; background:#C8FF4D; color:#15140F; display:flex; align-items:center; justify-content:center; font-family:'Sora'; font-weight:700; font-size:17px;">Ya lo he enviado</div>
+          <div style="text-align:center; font-size:12.5px; color:#8E887B; margin-top:12px; font-weight:600;">{{partnerName}} recibirá un aviso para confirmarlo</div>
+        </div>
+      </div>
+      </sc-if>
+
+      <!-- ===================== SETTLE: WAITING ===================== -->
+      <sc-if value="{{isSettleWaiting}}" hint-placeholder-val="{{false}}">
+      <div style="min-height:100%; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:30px 30px 60px; text-align:center;">
+        <div style="width:104px; height:104px; border-radius:32px; background:#211F18; border:1px solid #302D24; display:flex; align-items:center; justify-content:center; font-size:46px; animation:sp-pop .4s ease;">⏳</div>
+        <div style="font-family:'Sora'; font-weight:700; font-size:23px; margin-top:24px;">Esperando confirmación</div>
+        <div style="font-size:15px; color:#8E887B; font-weight:600; margin-top:10px; line-height:1.5;">{{partnerName}} tiene que confirmar<br>tu Bizum de <span style="color:#F4F1E8; font-weight:700;">34,50 €</span></div>
+        <div style="margin-top:26px; display:inline-flex; align-items:center; gap:8px; background:#2A2516; color:#E0B85C; font-weight:700; font-size:13px; padding:10px 16px; border-radius:12px;">● Enviado · pendiente</div>
+        <div onClick="{{settleConfirmDemo}}" style="margin-top:30px; font-size:12.5px; color:#6B6759; font-weight:600; cursor:pointer; text-decoration:underline;">(demo) ver como {{partnerName}} →</div>
+      </div>
+      </sc-if>
+
+      <!-- ===================== SETTLE: RECEIVER ===================== -->
+      <sc-if value="{{isSettleReceiver}}" hint-placeholder-val="{{false}}">
+      <div style="min-height:100%; display:flex; flex-direction:column; padding:6px 22px 0;">
+        <div style="padding:6px 0 4px;"><div style="font-family:'Sora'; font-weight:700; font-size:24px;">¿Te ha llegado?</div></div>
+        <div style="background:#0D0C0A; border:1px solid #2A2820; border-radius:24px; padding:28px 22px; margin-top:16px; text-align:center; position:relative; overflow:hidden;">
+          <div style="position:absolute; right:-26px; top:-30px; width:120px; height:120px; border-radius:50%; background:rgba(200,255,77,.13);"></div>
+          <div style="display:flex; align-items:center; justify-content:center; gap:10px; position:relative;">
+            <div style="width:42px; height:42px; border-radius:13px; background:#2A2820; color:#F4F1E8; display:flex; align-items:center; justify-content:center; font-family:'Sora'; font-weight:700; font-size:17px;">{{partnerInitial}}</div>
+            <span style="font-size:15px; color:#F4F1E8; font-weight:600;">{{partnerName}} dice que te envió</span>
+          </div>
+          <div style="font-family:'Sora'; font-weight:800; font-size:52px; color:#C8FF4D; line-height:1; margin-top:16px; letter-spacing:-2px; position:relative;">34,50 €</div>
+          <div style="font-size:13px; color:#B8B2A4; font-weight:600; margin-top:10px; position:relative;">por Bizum</div>
+        </div>
+        <div style="flex:1;"></div>
+        <div style="padding:14px 0 8px; display:flex; flex-direction:column; gap:10px;">
+          <div onClick="{{settleDone}}" class="sp-press" style="cursor:pointer; height:58px; border-radius:18px; background:#34D17F; color:#0C2417; display:flex; align-items:center; justify-content:center; gap:8px; font-family:'Sora'; font-weight:700; font-size:17px;">✓ Confirmar que lo he recibido</div>
+          <div class="sp-press" style="cursor:pointer; height:50px; border-radius:16px; background:#211F18; border:1px solid #4A2826; color:#FF8077; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:14.5px;">Hay un problema</div>
+        </div>
+      </div>
+      </sc-if>
+
+      <!-- ===================== SETTLE: DONE ===================== -->
+      <sc-if value="{{isSettleDone}}" hint-placeholder-val="{{false}}">
+      <div style="min-height:100%; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:30px 28px 60px; text-align:center;">
+        <div style="width:112px; height:112px; border-radius:34px; background:#16251B; border:1px solid #234430; display:flex; align-items:center; justify-content:center; font-size:54px; animation:sp-pop .45s ease;">🎉</div>
+        <div style="font-family:'Sora'; font-weight:800; font-size:27px; color:#5FE39A; margin-top:22px;">¡Semana cerrada!</div>
+        <div style="font-size:15px; color:#8E887B; font-weight:600; margin-top:8px;">Las cuentas claras, el amor intacto 💛</div>
+        <div style="width:100%; background:#211F18; border:1px solid #302D24; border-radius:18px; padding:16px; margin-top:26px;">
+          <div style="display:flex; justify-content:space-between; padding:4px 0;"><span style="color:#8E887B; font-weight:600; font-size:14px;">Bizum liquidado</span><span style="font-family:'Sora'; font-weight:700; font-size:15px;">34,50 €</span></div>
+          <div style="height:1px; background:#302D24; margin:5px 0;"></div>
+          <div style="display:flex; justify-content:space-between; padding:4px 0;"><span style="color:#8E887B; font-weight:600; font-size:14px;">Confirmado</span><span style="font-family:'Sora'; font-weight:700; font-size:15px; color:#5FE39A;">Hoy, 21:04</span></div>
+        </div>
+        <div onClick="{{goAdd}}" class="sp-press" style="cursor:pointer; width:100%; box-sizing:border-box; height:56px; border-radius:18px; background:#C8FF4D; color:#15140F; display:flex; align-items:center; justify-content:center; font-family:'Sora'; font-weight:700; font-size:16px; margin-top:18px;">Empezar nueva semana</div>
+      </div>
+      </sc-if>
+
+      <!-- ===================== LOGIN ===================== -->
+      <sc-if value="{{isLogin}}" hint-placeholder-val="{{false}}">
+      <div style="min-height:100%; display:flex; flex-direction:column; padding:0 30px 40px; position:relative; overflow:hidden;">
+        <div style="position:absolute; inset:0; background-image:radial-gradient(#26241A 1.4px, transparent 1.4px); background-size:22px 22px; opacity:.7;"></div>
+        <div style="flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; position:relative;">
+          <div style="width:84px; height:84px; border-radius:26px; background:#211F18; border:1px solid #34311F; display:flex; align-items:center; justify-content:center; box-shadow:0 16px 36px -14px rgba(200,255,77,.25);">
+            <svg width="46" height="46" viewBox="0 0 32 32" fill="none"><path d="M6 12 H22 M22 12 L17.5 7.5 M22 12 L17.5 16.5" stroke="#F4F1E8" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M26 20 H10 M10 20 L14.5 15.5 M10 20 L14.5 24.5" stroke="#C8FF4D" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+          <div style="font-family:'Sora'; font-weight:800; font-size:42px; letter-spacing:-1.5px; margin-top:22px;">splits<span style="color:#C8FF4D;">y</span></div>
+          <div style="font-size:16px; color:#8E887B; font-weight:600; margin-top:8px; text-align:center; line-height:1.4;">Las cuentas claras,<br>el amor intacto.</div>
+        </div>
+        <div style="position:relative;">
+          <div class="sp-press" style="cursor:pointer; height:58px; background:#FFFFFF; border-radius:16px; display:flex; align-items:center; justify-content:center; gap:11px;">
+            <svg width="22" height="22" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+            <span style="font-weight:700; font-size:16px; color:#1A1815;">Continuar con Google</span>
+          </div>
+          <div style="text-align:center; font-size:12.5px; color:#6B6759; font-weight:600; margin-top:18px; line-height:1.5;">Hecho para dos. Solo vosotros dos.</div>
+        </div>
+      </div>
+      </sc-if>
+
+      <!-- ===================== ONBOARDING CREATE ===================== -->
+      <sc-if value="{{isOnbCreate}}" hint-placeholder-val="{{false}}">
+      <div style="min-height:100%; display:flex; flex-direction:column; padding:18px 26px 40px;">
+        <div style="display:flex; gap:8px; background:#211F18; padding:4px; border-radius:14px;">
+          <div style="flex:1; text-align:center; background:#C8FF4D; color:#15140F; border-radius:11px; padding:10px; font-weight:700; font-size:13.5px;">Crear</div>
+          <div style="flex:1; text-align:center; padding:10px; font-weight:700; font-size:13.5px; color:#8E887B;">Unirme</div>
+        </div>
+        <div style="margin-top:30px;">
+          <div style="font-family:'Sora'; font-weight:700; font-size:25px; line-height:1.2;">Crea vuestra<br>cuenta compartida</div>
+          <div style="font-size:14.5px; color:#8E887B; font-weight:600; margin-top:10px; line-height:1.5;">Comparte el código con tu pareja y empezad a apuntar gastos juntos.</div>
+        </div>
+        <div style="background:#0D0C0A; border:1px solid #2A2820; border-radius:24px; padding:26px 22px; margin-top:26px; text-align:center; position:relative; overflow:hidden;">
+          <div style="position:absolute; right:-24px; bottom:-30px; width:110px; height:110px; border-radius:50%; background:rgba(200,255,77,.13);"></div>
+          <div style="font-size:11.5px; font-weight:700; letter-spacing:1.4px; text-transform:uppercase; color:#B8B2A4; position:relative;">Vuestro código</div>
+          <div style="font-family:'Sora'; font-weight:800; font-size:46px; letter-spacing:8px; color:#C8FF4D; margin-top:12px; position:relative;">QF7K2P</div>
+          <div class="sp-press" style="cursor:pointer; display:inline-flex; align-items:center; gap:8px; margin-top:18px; background:#C8FF4D; color:#15140F; font-weight:700; font-size:14px; padding:11px 20px; border-radius:13px; position:relative;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><rect x="8" y="8" width="12" height="13" rx="2.5" stroke="#15140F" stroke-width="1.8"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2" stroke="#15140F" stroke-width="1.8"/></svg>
+            Copiar y compartir
+          </div>
+        </div>
+        <div style="flex:1;"></div>
+        <div style="text-align:center; font-size:13px; color:#8E887B; font-weight:600;">Esperando a que tu pareja se una…</div>
+      </div>
+      </sc-if>
+
+      <!-- ===================== ONBOARDING JOIN ===================== -->
+      <sc-if value="{{isOnbJoin}}" hint-placeholder-val="{{false}}">
+      <div style="min-height:100%; display:flex; flex-direction:column; padding:18px 26px 40px;">
+        <div style="display:flex; gap:8px; background:#211F18; padding:4px; border-radius:14px;">
+          <div style="flex:1; text-align:center; padding:10px; font-weight:700; font-size:13.5px; color:#8E887B;">Crear</div>
+          <div style="flex:1; text-align:center; background:#C8FF4D; color:#15140F; border-radius:11px; padding:10px; font-weight:700; font-size:13.5px;">Unirme</div>
+        </div>
+        <div style="margin-top:30px;">
+          <div style="font-family:'Sora'; font-weight:700; font-size:25px; line-height:1.2;">¿Tienes un código?</div>
+          <div style="font-size:14.5px; color:#8E887B; font-weight:600; margin-top:10px; line-height:1.5;">Introdúcelo para uniros en la misma cuenta.</div>
+        </div>
+        <div style="display:flex; gap:9px; margin-top:30px;">
+          <sc-for list="{{otp}}" as="d" hint-placeholder-count="6">
+            <div style="{{d.style}}">{{d.char}}</div>
+          </sc-for>
+        </div>
+        <div class="sp-press" style="cursor:pointer; height:58px; border-radius:18px; background:#C8FF4D; color:#15140F; display:flex; align-items:center; justify-content:center; font-family:'Sora'; font-weight:700; font-size:17px; margin-top:26px;">Unirme</div>
+        <div style="flex:1;"></div>
+      </div>
+      </sc-if>
+
+      <!-- ===================== WEEK DETAIL ===================== -->
+      <sc-if value="{{isWeek}}" hint-placeholder-val="{{false}}">
+      <div style="padding:6px 22px 24px;">
+        <div style="display:flex; align-items:center; gap:12px; padding:6px 0 16px;">
+          <div style="width:38px; height:38px; border-radius:12px; background:#211F18; border:1px solid #302D24; display:flex; align-items:center; justify-content:center;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M15 5l-7 7 7 7" stroke="#F4F1E8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+          <div><div style="font-family:'Sora'; font-weight:700; font-size:20px; line-height:1.1;">Semana del 9 jun</div><div style="display:inline-flex; align-items:center; gap:5px; margin-top:4px; background:#16271C; color:#5FE39A; font-weight:700; font-size:11.5px; padding:4px 9px; border-radius:8px;">✓ Liquidada</div></div>
+        </div>
+        <div style="display:flex; flex-direction:column; gap:8px;">
+          <sc-for list="{{weekExpenses}}" as="e" hint-placeholder-count="4">
+            <div style="display:flex; align-items:center; gap:12px; background:#211F18; border:1px solid #302D24; border-radius:16px; padding:13px 14px;">
+              <div style="width:40px; height:40px; border-radius:12px; background:#2A2820; display:flex; align-items:center; justify-content:center; font-size:19px;">{{e.emoji}}</div>
+              <div style="flex:1; min-width:0;"><div style="font-weight:700; font-size:14.5px;">{{e.concept}}</div><div style="font-size:12px; color:#8E887B; margin-top:2px;">{{e.who}} · {{e.time}}</div></div>
+              <div style="font-family:'Sora'; font-weight:700; font-size:16px;">{{e.amount}} €</div>
+            </div>
+          </sc-for>
+        </div>
+        <div style="background:#0D0C0A; border:1px solid #2A2820; border-radius:20px; padding:20px; margin-top:18px;">
+          <div style="display:flex; justify-content:space-between; padding:5px 0;"><span style="color:#B8B2A4; font-weight:600; font-size:13.5px;">Quién pagó más</span><span style="color:#F4F1E8; font-family:'Sora'; font-weight:700; font-size:14px;">{{partnerName}}</span></div>
+          <div style="display:flex; justify-content:space-between; padding:5px 0;"><span style="color:#B8B2A4; font-weight:600; font-size:13.5px;">Bizum</span><span style="color:#C8FF4D; font-family:'Sora'; font-weight:700; font-size:14px;">34,50 €</span></div>
+          <div style="display:flex; justify-content:space-between; padding:5px 0;"><span style="color:#B8B2A4; font-weight:600; font-size:13.5px;">Liquidada</span><span style="color:#F4F1E8; font-family:'Sora'; font-weight:700; font-size:14px;">14 jun, 21:04</span></div>
+        </div>
+      </div>
+      </sc-if>
+
+    </div>
+
+    <!-- bottom nav -->
+    <sc-if value="{{showNav}}" hint-placeholder-val="{{true}}">
+    <div style="flex:0 0 auto; background:rgba(21,20,15,.92); backdrop-filter:blur(12px); border-top:1px solid #2A2820; padding:8px 24px 26px; display:flex; align-items:flex-start; justify-content:space-around;">
+      <div onClick="{{goAdd}}" style="cursor:pointer; display:flex; flex-direction:column; align-items:center; gap:4px; width:72px;">
+        <svg width="25" height="25" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="{{c1}}" stroke-width="{{w1}}"/><path d="M12 8.5v7M8.5 12h7" stroke="{{c1}}" stroke-width="{{w1}}" stroke-linecap="round"/></svg>
+        <span style="font-size:11px; font-weight:700; color:{{c1}};">Gasto</span>
+      </div>
+      <div onClick="{{goSummary}}" style="cursor:pointer; display:flex; flex-direction:column; align-items:center; gap:4px; width:72px;">
+        <svg width="25" height="25" viewBox="0 0 24 24" fill="none"><rect x="4" y="3" width="16" height="18" rx="3" stroke="{{c2}}" stroke-width="{{w2}}"/><path d="M8 8h8M8 12h8M8 16h4" stroke="{{c2}}" stroke-width="{{w2}}" stroke-linecap="round"/></svg>
+        <span style="font-size:11px; font-weight:700; color:{{c2}};">Resumen</span>
+      </div>
+      <div onClick="{{goSettle}}" style="cursor:pointer; display:flex; flex-direction:column; align-items:center; gap:4px; width:72px;">
+        <svg width="25" height="25" viewBox="0 0 24 24" fill="none"><path d="M4 9h13M17 9l-3.2-3.2M17 9l-3.2 3.2" stroke="{{c3}}" stroke-width="{{w3}}" stroke-linecap="round" stroke-linejoin="round"/><path d="M20 15H7M7 15l3.2-3.2M7 15l3.2 3.2" stroke="{{c3b}}" stroke-width="{{w3}}" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <span style="font-size:11px; font-weight:700; color:{{c3}};">Liquidar</span>
+      </div>
+    </div>
+    </sc-if>
+
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:436,&quot;height&quot;:866},&quot;mode&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;static&quot;,&quot;interactive&quot;],&quot;default&quot;:&quot;static&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;screen&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;add&quot;,&quot;summary&quot;,&quot;summary-settled&quot;,&quot;summary-empty&quot;,&quot;settle-payer&quot;,&quot;settle-waiting&quot;,&quot;settle-receiver&quot;,&quot;settle-done&quot;,&quot;login&quot;,&quot;onb-create&quot;,&quot;onb-join&quot;,&quot;week&quot;],&quot;default&quot;:&quot;add&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;meName&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;Ana&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;partnerName&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;Carlos&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;showFriday&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:false,&quot;tsType&quot;:&quot;boolean&quot;}}">
+class Component extends DCLogic {
+  state = {
+    screen: 'add',
+    settleStep: 'payer',
+    cents: 0,
+    concept: '',
+    activeChip: null,
+    keypad: false,
+    toast: false,
+    confetti: false,
+  };
+
+  interactive() { return this.props.mode === 'interactive'; }
+
+  scr() {
+    if (this.interactive()) {
+      return this.state.screen === 'settle' ? 'settle-' + this.state.settleStep : this.state.screen;
+    }
+    return this.props.screen || 'add';
+  }
+
+  fmt(c) {
+    return (c / 100).toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  }
+
+  digit(d) {
+    this.setState(s => ({ cents: Math.min(s.cents * 10 + d, 9999999) }));
+  }
+  back() { this.setState(s => ({ cents: Math.floor(s.cents / 10) })); }
+
+  pickChip(label) { this.setState({ concept: label, activeChip: label }); }
+
+  save() {
+    if (this.state.cents <= 0) return;
+    this.setState({ confetti: true, toast: true, keypad: false });
+    setTimeout(() => this.setState({ toast: false }), 1700);
+    setTimeout(() => this.setState({ confetti: false, cents: 0, concept: '', activeChip: null }), 1500);
+  }
+
+  nav(screen) { this.setState({ screen, keypad: false }); }
+
+  renderVals() {
+    const ACC = '#C8FF4D', INK = '#F4F1E8';
+    const scr = this.scr();
+    const me = this.props.meName || 'Ana';
+    const partner = this.props.partnerName || 'Carlos';
+
+    // chips
+    const chipDefs = [
+      { label: 'Súper', emoji: '🛒' }, { label: 'Restaurante', emoji: '🍽️' },
+      { label: 'Gasolina', emoji: '⛽' }, { label: 'Farmacia', emoji: '💊' },
+      { label: 'Ocio', emoji: '🍿' }, { label: 'Café', emoji: '☕' },
+    ];
+    const chips = chipDefs.map(c => {
+      const active = this.state.activeChip === c.label;
+      const base = 'cursor:pointer; user-select:none; white-space:nowrap; font-weight:700; font-size:13px; padding:9px 14px; border-radius:13px; transition:all .12s;';
+      const style = active
+        ? base + ' background:#C8FF4D; color:#15140F; border:1px solid #C8FF4D;'
+        : base + ' background:#211F18; color:#B8B2A4; border:1px solid #302D24;';
+      return { ...c, style, onClick: () => this.pickChip(c.label) };
+    });
+
+    // keypad keys
+    const keyDefs = ['1','2','3','4','5','6','7','8','9',',','0','⌫'];
+    const keys = keyDefs.map(k => ({
+      label: k,
+      onClick: k === '⌫' ? () => this.back() : (k === ',' ? () => {} : () => this.digit(parseInt(k, 10))),
+    }));
+
+    const hasAmount = this.state.cents > 0;
+
+    // save button
+    const saveStyle = (hasAmount
+      ? 'background:#C8FF4D; color:#15140F;'
+      : 'background:#252319; color:#5E5B50;')
+      + ' cursor:pointer; height:60px; border-radius:18px; display:flex; align-items:center; justify-content:center; font-family:\'Sora\'; font-weight:700; font-size:18px;';
+
+    // confetti pieces
+    const colors = ['#C8FF4D', '#F4F1E8', '#34D17F', '#9BE63A'];
+    const confetti = Array.from({ length: 26 }).map((_, i) => {
+      const left = 6 + Math.random() * 88;
+      const delay = Math.random() * 0.25;
+      const dur = 1.0 + Math.random() * 0.7;
+      const size = 7 + Math.random() * 7;
+      const col = colors[i % colors.length];
+      const rad = Math.random() > 0.5 ? '2px' : '50%';
+      return { style: `position:absolute; top:120px; left:${left}%; width:${size}px; height:${size}px; background:${col}; border-radius:${rad}; animation:sp-confetti ${dur}s ${delay}s ease-in forwards;` };
+    });
+
+    // summary expenses
+    const expenses = [
+      { emoji: '🍽️', concept: 'Restaurante', who: partner, time: 'Hoy 21:10', amount: '58,00' },
+      { emoji: '🛒', concept: 'Súper', who: me, time: 'Hoy 19:24', amount: '42,30' },
+      { emoji: '⛽', concept: 'Gasolina', who: partner, time: 'Ayer', amount: '63,00' },
+      { emoji: '💊', concept: 'Farmacia', who: me, time: 'Lun', amount: '12,50' },
+    ];
+    const weeks = [
+      { label: 'Semana del 9 jun', sub: 'Carlos pagó el Bizum', status: '✓ Liquidada',
+        badge: 'background:#16271C; color:#5FE39A; font-weight:700; font-size:11.5px; padding:6px 10px; border-radius:9px; white-space:nowrap;' },
+      { label: 'Semana del 2 jun', sub: 'Pendiente de cerrar', status: '⚠ Pendiente',
+        badge: 'background:#2A2516; color:#E0B85C; font-weight:700; font-size:11.5px; padding:6px 10px; border-radius:9px; white-space:nowrap;' },
+    ];
+
+    // OTP boxes
+    const otpChars = ['Q', 'F', '7', '', '', ''];
+    const otp = otpChars.map((ch, i) => {
+      const filled = ch !== '';
+      const focus = i === 3;
+      const style = 'flex:1; aspect-ratio:1; display:flex; align-items:center; justify-content:center; border-radius:15px; font-family:\'Sora\'; font-weight:800; font-size:26px; color:#F4F1E8; '
+        + (filled ? 'background:#211F18; border:2px solid #F4F1E8;'
+          : (focus ? 'background:#211F18; border:2px solid #C8FF4D;'
+            : 'background:#211F18; border:1.5px solid #302D24;'));
+      return { char: ch, style };
+    });
+
+    // bottom nav active coloring
+    const tab = scr.startsWith('settle') ? 'settle' : (scr.startsWith('summary') ? 'summary' : (scr === 'add' ? 'add' : ''));
+    const on = '#C8FF4D', off = '#6B6759';
+    const navColor = (t) => tab === t ? on : off;
+    const navW = (t) => tab === t ? 2.2 : 1.8;
+
+    const showNav = ['add', 'summary', 'summary-settled', 'summary-empty', 'settle-payer', 'settle-waiting', 'settle-receiver', 'settle-done'].includes(scr);
+
+    return {
+      isAdd: scr === 'add',
+      isSummary: scr === 'summary',
+      isSummarySettled: scr === 'summary-settled',
+      isSummaryEmpty: scr === 'summary-empty',
+      isSettlePayer: scr === 'settle-payer',
+      isSettleWaiting: scr === 'settle-waiting',
+      isSettleReceiver: scr === 'settle-receiver',
+      isSettleDone: scr === 'settle-done',
+      isLogin: scr === 'login',
+      isOnbCreate: scr === 'onb-create',
+      isOnbJoin: scr === 'onb-join',
+      isWeek: scr === 'week',
+
+      meName: me, partnerName: partner,
+      meInitial: me.charAt(0).toUpperCase(),
+      partnerInitial: partner.charAt(0).toUpperCase(),
+
+      showFriday: this.props.showFriday === true || this.props.showFriday === 'true',
+      fridayAmount: '34,50',
+
+      amountText: this.fmt(this.state.cents),
+      amountColor: hasAmount ? INK : '#4A483F',
+      concept: this.state.concept,
+      onConcept: (e) => this.setState({ concept: e.target.value }),
+      chips, keys,
+      keypadOpen: this.state.keypad,
+      openKeypad: () => this.setState({ keypad: true }),
+      closeKeypad: () => this.setState({ keypad: false }),
+      save: () => this.save(),
+      saveStyle,
+      saveLabel: hasAmount ? 'Guardar gasto' : 'Introduce un importe',
+      toastOn: this.state.toast,
+      confettiOn: this.state.confetti,
+      confetti,
+
+      meTotal: '102,30', partnerTotal: '136,50',
+      debtorName: me, creditorName: partner, debtAmount: '17,10',
+      expenseCount: expenses.length, expenses, weeks,
+
+      otp,
+      weekExpenses: expenses,
+
+      showNav,
+      goAdd: () => this.nav('add'),
+      goSummary: () => this.nav('summary'),
+      goSettle: () => this.nav('settle'),
+      settleSent: () => this.setState({ settleStep: 'waiting' }),
+      settleConfirmDemo: () => this.setState({ settleStep: 'receiver' }),
+      settleDone: () => this.setState({ settleStep: 'done' }),
+      c1: navColor('add'), w1: navW('add'),
+      c2: navColor('summary'), w2: navW('summary'),
+      c3: navColor('settle'), c3b: tab === 'settle' ? '#C8FF4D' : off, w3: navW('settle'),
+    };
+  }
+}
+</script>
+</body>
+</html>

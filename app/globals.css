@@ -1,0 +1,233 @@
+@import "tailwindcss";
+
+/* Colores base - Rediseño oscuro + lima */
+:root {
+  --splitsy-bg-primary: #15140F;
+  --splitsy-bg-secondary: #211F18;
+  --splitsy-bg-tertiary: #0D0C0A;
+  --splitsy-bg-success: #16251B;
+
+  --splitsy-accent: #C8FF4D;
+  --splitsy-accent-dark: #9BE63A;
+  --splitsy-accent-success: #34D17F;
+
+  --splitsy-text: #F4F1E8;
+  --splitsy-text-secondary: #8E887B;
+  --splitsy-text-muted: #6B6759;
+
+  --splitsy-border: #302D24;
+  --splitsy-border-light: #2C2A24;
+
+  --splitsy-danger: #FF8077;
+  --splitsy-warning: #E0B85C;
+}
+
+@layer base {
+  body {
+    background-color: var(--splitsy-bg-primary);
+    color: var(--splitsy-text);
+    font-family: var(--font-manrope), system-ui, sans-serif;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-sora), sans-serif;
+  }
+}
+
+.btn-primary {
+  font-family: var(--font-sora), sans-serif;
+}
+
+.input-amount {
+  font-family: var(--font-sora), sans-serif;
+}
+
+@layer components {
+  .btn-primary {
+    @apply w-full font-bold py-4 px-6 rounded-xl text-lg transition-all active:scale-95;
+    background-color: var(--splitsy-accent);
+    color: var(--splitsy-bg-primary);
+    font-family: 'Sora', sans-serif;
+  }
+
+  .btn-primary:hover {
+    background-color: var(--splitsy-accent-dark);
+  }
+
+  .btn-secondary {
+    @apply w-full font-semibold py-3 px-6 rounded-xl text-base transition-all active:scale-95;
+    background-color: var(--splitsy-bg-secondary);
+    border: 1px solid var(--splitsy-border);
+    color: var(--splitsy-text);
+  }
+
+  .card {
+    background-color: var(--splitsy-bg-secondary);
+    border: 1px solid var(--splitsy-border);
+    @apply rounded-2xl p-4;
+  }
+
+  .card-success {
+    background-color: var(--splitsy-bg-success);
+    border: 1px solid #234430;
+  }
+
+  .card-tertiary {
+    background-color: var(--splitsy-bg-tertiary);
+    border: 1px solid var(--splitsy-border-light);
+  }
+
+  .input-amount {
+    @apply w-full text-center font-bold bg-transparent border-none outline-none;
+    color: var(--splitsy-text);
+    font-family: 'Sora', sans-serif;
+    font-size: 64px;
+    letter-spacing: -2px;
+  }
+
+  .input-text {
+    @apply w-full rounded-xl px-4 py-3 outline-none transition-colors;
+    background-color: var(--splitsy-bg-secondary);
+    border: 1px solid var(--splitsy-border);
+    color: var(--splitsy-text);
+    font-weight: 600;
+  }
+
+  .input-text:focus {
+    border-color: var(--splitsy-accent);
+  }
+
+  .input-text::placeholder {
+    color: var(--splitsy-text-muted);
+  }
+
+  .chip {
+    @apply inline-block rounded-xl px-4 py-2 text-sm font-medium transition-all cursor-pointer;
+    background-color: var(--splitsy-bg-secondary);
+    border: 1px solid var(--splitsy-border);
+    color: var(--splitsy-text-secondary);
+    font-weight: 700;
+  }
+
+  .chip:hover {
+    border-color: var(--splitsy-accent);
+  }
+
+  .chip-active {
+    background-color: var(--splitsy-accent);
+    color: var(--splitsy-bg-primary);
+    border-color: var(--splitsy-accent);
+  }
+}
+
+/* Safe area for iPhone */
+@supports (padding: max(0px)) {
+  body {
+    padding-left: max(0px, env(safe-area-inset-left));
+    padding-right: max(0px, env(safe-area-inset-right));
+  }
+}
+
+/* Disable zoom on input focus */
+input[type="number"],
+input[type="tel"] {
+  font-size: 16px;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 4px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #ddd;
+  border-radius: 2px;
+}
+
+/* Animations */
+@keyframes slide-down {
+  from {
+    transform: translate(-50%, -100%);
+    opacity: 0;
+  }
+  to {
+    transform: translate(-50%, 0);
+    opacity: 1;
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes scale-in {
+  from {
+    transform: scale(0.9);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.animate-slide-down {
+  animation: slide-down 0.3s ease-out;
+}
+
+.animate-fade-in {
+  animation: fade-in 0.3s ease-out;
+}
+
+.animate-scale-in {
+  animation: scale-in 0.3s ease-out;
+}
+
+/* Microinteractions */
+.card {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.btn-primary,
+.btn-secondary {
+  transition: all 0.2s ease;
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(242, 201, 76, 0.3);
+}
+
+/* Confetti effect (simple) */
+@keyframes confetti-fall {
+  0% {
+    transform: translateY(-100vh) rotate(0deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(100vh) rotate(360deg);
+    opacity: 0;
+  }
+}
+
+.confetti {
+  position: fixed;
+  width: 10px;
+  height: 10px;
+  background: #F2C94C;
+  animation: confetti-fall 3s linear forwards;
+}
