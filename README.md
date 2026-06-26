@@ -167,37 +167,69 @@ splitsy/
 └── public/                  # Assets estáticos
 ```
 
-## Deploy
+## 🚀 DESPLIEGUE EN VPS (PRODUCCIÓN)
 
-### Vercel (recomendado)
+### Opción 1: Script automático (RECOMENDADO)
 
-1. Instalar Vercel CLI:
 ```bash
-npm i -g vercel
+./deploy.sh
 ```
 
-2. Deploy:
+Este script automáticamente:
+1. Construye la aplicación
+2. Construye imagen Docker
+3. Inicia el contenedor en puerto 3000
+
+### Opción 2: Manual
+
 ```bash
-vercel
-```
-
-3. Configurar variables de entorno en Vercel Dashboard
-
-### Firebase Hosting
-
-1. Instalar Firebase CLI:
-```bash
-npm install -g firebase-tools
-```
-
-2. Build:
-```bash
+# 1. Construir
 npm run build
+
+# 2. Construir imagen Docker
+docker build -t splitsy:latest .
+
+# 3. Iniciar contenedor
+docker run -d --name splitsy-app --restart unless-stopped -p 3000:3000 splitsy:latest
 ```
 
-3. Deploy:
+### Configurar Nginx (OPCIONAL - para dominio)
+
+1. Copiar `nginx.conf` a `/etc/nginx/sites-available/splitsy`
+2. Editar y cambiar `app.tudominio.com` por tu dominio real
+3. Crear enlace: `sudo ln -s /etc/nginx/sites-available/splitsy /etc/nginx/sites-enabled/`
+4. Probar: `sudo nginx -t`
+5. Recargar: `sudo systemctl reload nginx`
+
+### SSL con Let's Encrypt (RECOMENDADO)
+
 ```bash
-firebase deploy
+sudo apt install certbot python3-certbot-nginx -y
+sudo certbot --nginx -d app.tudominio.com
+```
+
+## 📋 ARCHIVOS DE DESPLIEGUE VPS
+
+- ✅ `Dockerfile` - Configuración contenedor
+- ✅ `docker-compose.yml` - Orquestación servicios
+- ✅ `nginx.conf` - Configuración reverse proxy
+- ✅ `deploy.sh` - Script despliegue automático
+- ✅ `.env.example` - Plantilla variables entorno
+
+## 🔧 COMANDOS ÚTILES VPS
+
+```bash
+# Ver logs
+docker logs -f splitsy-app
+
+# Reiniciar app
+docker restart splitsy-app
+
+# Actualizar
+git pull && ./deploy.sh
+
+# Verificar estado
+docker ps
 ```
 
 ## Testing manual

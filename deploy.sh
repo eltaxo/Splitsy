@@ -18,6 +18,22 @@ fi
 
 echo -e "${GREEN}✓${NC} Directorio correcto"
 
+# Crear archivo .env.production si no existe
+if [ ! -f ".env.production" ]; then
+    echo -e "${YELLOW}📝 Creando archivo .env.production desde .env.example...${NC}"
+    cp .env.example .env.production
+    echo -e "${YELLOW}⚠️  IMPORTANTE: Edita .env.production con tus credenciales reales de Firebase${NC}"
+    echo -e "${YELLOW}   Necesitas NEXT_PUBLIC_* variables y FIREBASE_SERVICE_ACCOUNT_KEY${NC}"
+    echo ""
+    read -p "¿Has configurado .env.production? (s/n): " configured
+    if [ "$configured" != "s" ]; then
+        echo "❌ Por favor configura .env.production antes de continuar"
+        exit 1
+    fi
+fi
+
+echo -e "${GREEN}✓${NC} Variables de entorno configuradas"
+
 # Construir la aplicación
 echo -e "${YELLOW}📦 Construyendo la aplicación...${NC}"
 npm run build
