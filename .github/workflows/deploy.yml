@@ -1,0 +1,77 @@
+name: Deploy to VPS
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Deploy to VPS via SSH
+      uses: appleboy/ssh-action@v1.0.0
+      with:
+        host: ${{ secrets.VPS_HOST }}
+        username: ${{ secrets.VPS_USER }}
+        key: ${{ secrets.VPS_SSH_KEY }}
+        port: ${{ secrets.VPS_PORT }}
+        script_stop: true
+        script: |
+          echo "🚀 Iniciando despliegue automático..."
+
+          # Ir al directorio del proyecto
+          cd Splitsy || cd ~/Splitsy || git clone https://github.com/eltaxo/Splitsy.git ~/Splitsy && cd ~/Splitsy
+
+          # Actualizar código
+          git pull origin main
+
+          # Crear .env.production si no existe
+          if [ ! -f .env.production ]; then
+            cp .env.example .env.production
+            echo "⚠️  IMPORTANTE: Configura .env.production con credenciales Firebase"
+          fi
+
+          # Construir imagen Docker
+          echo "📦 Construyendo imagen Docker..."
+          docker build -t splitsy:latest .
+
+          # Parar y eliminar contenedor anterior
+          echo "🛑 Deteniendo contenedor anterior..."
+          docker stop splitsy-app 2>/dev/null || true
+          docker rm splitsy-app 2>/dev/null || true
+
+          # Iniciar nuevo contenedor
+          echo "🚀 Iniciando nuevo contenedor..."
+          docker run -d \
+            --name splitsy-app \
+            --restart unless-stopped \
+            -p 3000:3000 \
+            --env-file .env.production \
+            splitsy:latest
+
+          # Limpiar imágenes antiguas
+          docker image prune -f
+
+          echo "✅ Despliegue completado!"
+
+          # Health check
+          sleep 5
+          if curl -f http://localhost:3000 > /dev/null 2>&1; then
+            echo "🎉 App funcionando correctamente!"
+          else
+            echo "⚠️  Warning: App puede no estar funcionando"
+          fi
+
+    - name: Notify deployment
+      if: always()
+      run: |
+        if [ "${{ job.status }}" = "success" ]; then
+          echo "✅ Despliegue exitoso en VPS"
+        else
+          echo "❌ Despliegue fallido"
+        fi
