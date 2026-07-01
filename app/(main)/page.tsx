@@ -15,8 +15,12 @@ export default function HomePage() {
 
   useEffect(() => {
     console.log('HomePage useEffect:', { loading, user: !!user, partnerId: user?.partnerId });
-    // NO redirecciones automáticas - cada página maneja su lógica
-  }, [user, loading]);
+
+    // Redirigir a login si no hay usuario después de cargar
+    if (!loading && !user) {
+      router.push('/login');
+    }
+  }, [user, loading, router]);
 
   useEffect(() => {
     // Comprobar si es viernes y mostrar banner
@@ -74,13 +78,9 @@ export default function HomePage() {
     );
   }
 
-  // Si no hay usuario, mostrar loading
+  // Si no hay usuario después de cargar, no mostrar nada (la redirección ocurrirá por useEffect)
   if (!user) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-[#8E887B]">Cargando...</div>
-      </div>
-    );
+    return null;
   }
 
   // Si no tiene pareja, mostrar pantalla de onboarding temporal

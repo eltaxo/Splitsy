@@ -78,7 +78,8 @@ export async function updateUserPartnerCode(
   partnerCode: string
 ): Promise<void> {
   const userRef = getUserRef(userId);
-  await updateDoc(userRef, { partnerCode });
+  // Usar setDoc con merge para crear el documento si no existe
+  await setDoc(userRef, { partnerCode }, { merge: true });
 }
 
 export async function findUserByPartnerCode(

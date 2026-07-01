@@ -1,10 +1,13 @@
 'use client';
 
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import Link from 'next/link';
 
 export default function OnboardingPage() {
-  const { user, signOut } = useAuth();
+  const { user, loading, signOut } = useAuth();
+  const router = useRouter();
 
   const handleLogout = async () => {
     try {
@@ -15,7 +18,17 @@ export default function OnboardingPage() {
     }
   };
 
-  if (!user) {
+  useEffect(() => {
+    // Esperar a que termine de cargar
+    if (loading) return;
+
+    // Si no hay usuario después de cargar, redirigir a login
+    if (!user) {
+      window.location.replace('/login');
+    }
+  }, [user, loading]);
+
+  if (loading || !user) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-[#8E887B]">Cargando...</div>

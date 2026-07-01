@@ -24,6 +24,14 @@ export default function LoginPage() {
     }
   }, [user, loading]);
 
+  // Si hay un error, limpiarlo después de 3 segundos
+  useEffect(() => {
+    if (error) {
+      const timer = setTimeout(() => setError(null), 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [error]);
+
   const handleSignIn = async () => {
     setIsLoading(true);
     setError(null);

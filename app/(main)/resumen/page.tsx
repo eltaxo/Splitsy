@@ -19,7 +19,22 @@ export default function ResumenPage() {
     }
   }, [user, loading, router]);
 
-  if (loading || expensesLoading) {
+  // Mostrar cargando solo si estamos cargando el estado de auth
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-[#8E887B]">Cargando...</div>
+      </div>
+    );
+  }
+
+  // Si no hay usuario después de cargar, no mostrar nada (la redirección ocurrirá por useEffect)
+  if (!user) {
+    return null;
+  }
+
+  // Cargar gastos si tenemos usuario y partnerId
+  if (expensesLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-[#8E887B]">Cargando...</div>
