@@ -70,7 +70,9 @@ export function useExpenses() {
             weekStart: data.weekStart && typeof data.weekStart.toDate === 'function'
               ? data.weekStart.toDate()
               : data.weekStart,
-          } as { paidBy: string; amount: number; concept: string; createdAt: Date; weekStart: Date };
+            receipt_url: data.receipt_url || null,  // NUEVO
+            note: data.note || null,                // NUEVO
+          } as { paidBy: string; amount: number; concept: string; createdAt: Date; weekStart: Date; receipt_url?: string | null; note?: string | null };
         });
 
         setExpenses(expensesData);

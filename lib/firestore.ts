@@ -115,7 +115,11 @@ export function getExpensesQuery(
 }
 
 export async function createExpense(
-  expenseData: Omit<ExpenseDocument, 'createdAt'> & { createdAt?: Date }
+  expenseData: Omit<ExpenseDocument, 'createdAt'> & {
+    createdAt?: Date;
+    receipt_url?: string | null;
+    note?: string | null;
+  }
 ): Promise<void> {
   const expensesRef = getExpensesRef();
   const newExpenseRef = doc(expensesRef);

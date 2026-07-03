@@ -47,6 +47,15 @@ export default function BottomNav() {
         </svg>
       ),
     },
+    {
+      href: '/estadisticas',
+      label: 'Estadísticas',
+      icon: (
+        <svg width="25" height="25" viewBox="0 0 24 24" fill="none">
+          <path d="M18 20V10M12 20V4M6 20v-6" stroke={pathname === '/estadisticas' ? '#C8FF4D' : '#6B6759'} strokeWidth={pathname === '/estadisticas' ? '2.2' : '1.8'} strokeLinecap="round" strokeLinejoin="round"/>
+        </svg>
+      ),
+    },
   ];
 
   return (

@@ -2,7 +2,8 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
-import { createExpense, getWeekStart } from '@/lib/firestore';
+import { createExpense, getWeekStart, getDocumentId } from '@/lib/firestore';
+import { useImageUpload } from '@/hooks/useImageUpload';
 
 const SUGGESTIONS = [
   { emoji: '🛒', label: 'Súper' },
@@ -19,11 +20,17 @@ interface ExpenseFormProps {
 
 export default function ExpenseForm({ onSuccess }: ExpenseFormProps) {
   const { user } = useAuth();
+  const { uploadReceipt, isUploading } = useImageUpload();
   const [amount, setAmount] = useState('');
   const [concept, setConcept] = useState('');
+  const [note, setNote] = useState('');
+  const [showNoteField, setShowNoteField] = useState(false);
+  const [receiptFile, setReceiptFile] = useState<File | null>(null);
+  const [receiptPreview, setReceiptPreview] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
   const amountInputRef = useRef<HTMLInputElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     // Autofocus en el campo de importe
@@ -54,6 +61,39 @@ export default function ExpenseForm({ onSuccess }: ExpenseFormProps) {
     setConcept(suggestion);
   };
 
+  const handleReceiptChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validar tipo de archivo
+    if (!file.type.startsWith('image/')) {
+      alert('Por favor, selecciona una imagen');
+      return;
+    }
+
+    // Validar tamaño
+    if (file.size > 5 * 1024 * 1024) {
+      alert('La imagen es demasiado grande. Máximo 5MB');
+      return;
+    }
+
+    // Crear preview local
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setReceiptPreview(reader.result as string);
+    };
+    reader.readAsDataURL(file);
+    setReceiptFile(file);
+  };
+
+  const handleRemoveReceipt = () => {
+    setReceiptFile(null);
+    setReceiptPreview(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -71,12 +111,21 @@ export default function ExpenseForm({ onSuccess }: ExpenseFormProps) {
     try {
       const weekStart = getWeekStart();
 
+      // Generar ID del expense y subir foto si existe
+      let receipt_url = null;
+      if (receiptFile) {
+        const expenseId = getDocumentId('expenses');
+        receipt_url = await uploadReceipt(receiptFile, expenseId);
+      }
+
       await createExpense({
         paidBy: user.uid,
         amount: amountValue,
         concept: concept.trim(),
         weekStart,
         createdAt: new Date(),
+        note: note.trim() || null,
+        receipt_url,
       });
 
       // Mostrar animación de éxito
@@ -86,9 +135,16 @@ export default function ExpenseForm({ onSuccess }: ExpenseFormProps) {
       setTimeout(() => {
         setAmount('');
         setConcept('');
+        setNote('');
+        setShowNoteField(false);
+        setReceiptFile(null);
+        setReceiptPreview(null);
         setShowSuccess(false);
         if (amountInputRef.current) {
           amountInputRef.current.focus();
+        }
+        if (fileInputRef.current) {
+          fileInputRef.current.value = '';
         }
         onSuccess?.();
       }, 1000);
@@ -139,6 +195,81 @@ export default function ExpenseForm({ onSuccess }: ExpenseFormProps) {
           {concept.length}/60
         </div>
       </div>
+
+      {/* Campo de nota opcional */}
+      <div className="mt-3">
+        {!showNoteField ? (
+          <button
+            type="button"
+            onClick={() => setShowNoteField(true)}
+            className="text-sm text-[#8E887B] hover:text-[#C8FF4D] transition-colors"
+            disabled={isLoading || showSuccess}
+          >
+            + Añadir nota
+          </button>
+        ) : (
+          <div className="space-y-2">
+            <textarea
+              value={note}
+              onChange={(e) => setNote(e.target.value.slice(0, 140))}
+              placeholder="Contexto opcional (ej: era el cumpleaños de tu madre)"
+              className="input-text w-full h-20 resize-none text-sm"
+              maxLength={140}
+              disabled={isLoading || showSuccess}
+            />
+            <div className="flex justify-between items-center">
+              <span className="text-xs text-[#6B6759]">{note.length}/140</span>
+              <button
+                type="button"
+                onClick={() => { setShowNoteField(false); setNote(''); }}
+                className="text-xs text-[#6B6759] hover:text-[#8E887B]"
+                disabled={isLoading || showSuccess}
+              >
+                Cancelar
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Botón de foto de ticket */}
+      <div className="flex justify-end mb-2">
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/*"
+          onChange={handleReceiptChange}
+          className="hidden"
+          disabled={isLoading || showSuccess}
+        />
+        <button
+          type="button"
+          onClick={() => fileInputRef.current?.click()}
+          className="text-sm text-[#8E887B] hover:text-[#C8FF4D] transition-colors flex items-center gap-1"
+          disabled={isLoading || showSuccess}
+        >
+          📷 Adjuntar ticket
+        </button>
+      </div>
+
+      {/* Preview de la imagen */}
+      {receiptPreview && (
+        <div className="relative bg-[#211F18] border border-[#302D24] rounded-2xl p-4 mb-4">
+          <img
+            src={receiptPreview}
+            alt="Vista previa del ticket"
+            className="w-full h-48 object-cover rounded-xl"
+          />
+          <button
+            type="button"
+            onClick={handleRemoveReceipt}
+            className="absolute top-2 right-2 w-8 h-8 bg-[#211F18] border border-[#302D24] text-white rounded-full flex items-center justify-center hover:text-[#C8FF4D] transition-colors"
+            disabled={isLoading || showSuccess}
+          >
+            ×
+          </button>
+        </div>
+      )}
 
       {/* Sugerencias rápidas */}
       <div className="flex flex-wrap gap-2">

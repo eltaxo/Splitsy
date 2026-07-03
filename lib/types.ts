@@ -16,6 +16,8 @@ export interface Expense {
   concept: string;
   weekStart: Date;
   createdAt: Date;
+  receipt_url?: string | null;  // NUEVO: URL de foto del ticket
+  note?: string | null;         // NUEVO: Nota opcional (máx 140)
 }
 
 export interface Settlement {
@@ -61,6 +63,8 @@ export interface ExpenseDocument {
   concept: string;
   weekStart: FirebaseFirestore.Timestamp | Date;
   createdAt: FirebaseFirestore.Timestamp | Date;
+  receipt_url?: string | null;  // NUEVO: URL de foto del ticket
+  note?: string | null;         // NUEVO: Nota opcional (máx 140)
 }
 
 export interface SettlementDocument {

@@ -1,5 +1,7 @@
 'use client';
+import { useState } from 'react';
 import { formatCurrency, formatTime, formatDate, conceptEmoji } from '@/lib/utils';
+import Lightbox from './Lightbox';
 
 interface Expense {
   id: string;
@@ -7,6 +9,8 @@ interface Expense {
   amount: number;
   concept: string;
   createdAt: Date;
+  note?: string | null;
+  receipt_url?: string | null;
 }
 
 interface ExpenseListProps {
@@ -22,6 +26,11 @@ export default function ExpenseList({
   currentUserName,
   partnerName,
 }: ExpenseListProps) {
+  const [lightboxImage, setLightboxImage] = useState<string | null>(null);
+
+  const openLightbox = (url: string) => setLightboxImage(url);
+  const closeLightbox = () => setLightboxImage(null);
+
   if (expenses.length === 0) {
     return (
       <div className="text-center py-12">
@@ -45,6 +54,7 @@ export default function ExpenseList({
   }, {} as Record<string, Expense[]>);
 
   return (
+    <>
     <div className="space-y-5">
       {Object.entries(grouped).map(([dateKey, dayExpenses]) => (
         <div key={dateKey}>
@@ -62,13 +72,29 @@ export default function ExpenseList({
                   key={expense.id}
                   className="flex items-center gap-3 bg-[#211F18] border border-[#302D24] rounded-2xl px-3.5 py-3"
                 >
-                  <div className="w-10 h-10 rounded-xl bg-[#2A2820] flex items-center justify-center text-xl shrink-0">
-                    {conceptEmoji(expense.concept)}
+                  <div className="flex items-center gap-2">
+                    <div className="w-10 h-10 rounded-xl bg-[#2A2820] flex items-center justify-center text-xl shrink-0">
+                      {conceptEmoji(expense.concept)}
+                    </div>
+                    {expense.receipt_url && (
+                      <button
+                        onClick={() => openLightbox(expense.receipt_url!)}
+                        className="text-[#6B6759] hover:text-[#C8FF4D] transition-colors text-lg"
+                      >
+                        📷
+                      </button>
+                    )}
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="font-bold text-[#F4F1E8] text-[14.5px] leading-tight truncate">
                       {expense.concept}
                     </p>
+                    {expense.note && (
+                      <p className="text-xs text-[#6B6759] mt-0.5 truncate flex items-center gap-1">
+                        <span>📝</span>
+                        {expense.note}
+                      </p>
+                    )}
                     <p className="text-xs text-[#8E887B] mt-0.5 truncate">
                       {payerName} · {formatTime(expense.createdAt)}
                     </p>
@@ -83,5 +109,8 @@ export default function ExpenseList({
         </div>
       ))}
     </div>
+
+    {lightboxImage && <Lightbox imageUrl={lightboxImage} onClose={closeLightbox} />}
+  </>
   );
 }
