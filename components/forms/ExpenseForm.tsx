@@ -40,21 +40,28 @@ export default function ExpenseForm({ onSuccess }: ExpenseFormProps) {
   }, []);
 
   const handleAmountChange = (value: string) => {
-    // Solo permitir números y un punto decimal
-    const cleaned = value.replace(/[^\d.]/g, '');
+    // Permitir dígitos, coma y punto - reemplazar todo lo demás
+    let cleaned = value.replace(/[^\d.,]/g, '');
 
-    // Solo un punto decimal
+    // Reemplazar comas por puntos
+    cleaned = cleaned.replace(/,/g, '.');
+
+    // Solo permitir un punto decimal - si hay múltiples, mantener solo el último
     const parts = cleaned.split('.');
     if (parts.length > 2) {
-      parts.pop();
+      // Mantener todo antes del último punto, y la última parte
+      const integerPart = parts.slice(0, -1).join('');
+      const decimalPart = parts[parts.length - 1];
+      cleaned = integerPart + '.' + decimalPart;
     }
 
     // Limitar a 2 decimales
-    if (parts.length === 2 && parts[1].length > 2) {
-      parts[1] = parts[1].slice(0, 2);
+    const finalParts = cleaned.split('.');
+    if (finalParts.length === 2 && finalParts[1].length > 2) {
+      finalParts[1] = finalParts[1].slice(0, 2);
     }
 
-    setAmount(parts.join('.'));
+    setAmount(finalParts.join('.'));
   };
 
   const handleSuggestionClick = (suggestion: string) => {
@@ -158,24 +165,24 @@ export default function ExpenseForm({ onSuccess }: ExpenseFormProps) {
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       {/* Campo de importe */}
-      <div onClick={() => amountInputRef.current?.focus()} className="cursor-pointer bg-[#211F18] border border-[#302D24] rounded-3xl p-8 text-center mt-1">
-        <div className="text-xs font-bold tracking-widest uppercase text-[#6B6759] mb-2">
-          Importe
-        </div>
-        <div className="flex items-baseline justify-center gap-2">
-          <span
-            className={`input-amount text-6xl ${amount ? 'text-[#F4F1E8]' : 'text-[#4A483F]'}`}
-          >
-            {amount || '0.00'}
-          </span>
-          <span className="text-3xl font-bold text-[#5E5B50]">€</span>
-        </div>
+      <div className="bg-[#211F18] border border-[#302D24] rounded-3xl p-8 text-center mt-1">
+        <input
+          ref={amountInputRef}
+          type="text"
+          inputMode="numeric"
+          value={amount}
+          onChange={(e) => handleAmountChange(e.target.value)}
+          placeholder="0,00"
+          className="w-full bg-transparent text-center text-6xl font-bold text-[#F4F1E8] placeholder:text-[#4A483F] outline-none"
+          disabled={isLoading || showSuccess}
+          style={{ fontSize: '3rem', lineHeight: '1.2' }}
+        />
         <div className="mt-3 inline-flex items-center gap-2 text-sm font-semibold text-[#6B6759]">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
             <rect x="4" y="3" width="16" height="18" rx="3" stroke="#6B6759" strokeWidth="1.8"/>
             <path d="M8 8h8M8 12h8M8 16h4" stroke="#6B6759" strokeWidth="1.8" strokeLinecap="round"/>
           </svg>
-          Toca para escribir
+          Introduce el importe
         </div>
       </div>
 
