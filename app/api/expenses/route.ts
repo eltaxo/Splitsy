@@ -4,7 +4,7 @@ import { collection, addDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { getWeekStart } from '@/lib/firestore';
 
-export const dynamic = 'force-static';
+export const dynamic = 'force-dynamic';
 
 export async function POST(request: NextRequest) {
   try {
