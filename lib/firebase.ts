@@ -14,20 +14,37 @@ const firebaseConfig = {
   measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID,
 };
 
-// Singleton Firebase App
-let firebaseApp: FirebaseApp;
-if (!getApps().length) {
-  firebaseApp = initializeApp(firebaseConfig);
-} else {
-  firebaseApp = getApps()[0];
+// Get Firebase App instance (lazy initialization)
+function getFirebaseApp(): FirebaseApp {
+  if (!getApps().length) {
+    return initializeApp(firebaseConfig);
+  }
+  return getApps()[0];
 }
 
-// Auth
-export const auth: Auth = getAuth(firebaseApp);
+// Lazy exports - only initialize when accessed
+export const auth = (() => {
+  try {
+    return getAuth(getFirebaseApp());
+  } catch {
+    return null as any;
+  }
+})();
+
 export const googleProvider = new GoogleAuthProvider();
 
-// Firestore
-export const db: Firestore = getFirestore(firebaseApp);
+export const db = (() => {
+  try {
+    return getFirestore(getFirebaseApp());
+  } catch {
+    return null as any;
+  }
+})();
 
-// Storage
-export const storage: FirebaseStorage = getStorage(firebaseApp);
+export const storage = (() => {
+  try {
+    return getStorage(getFirebaseApp());
+  } catch {
+    return null as any;
+  }
+})();
