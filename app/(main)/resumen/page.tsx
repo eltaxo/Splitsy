@@ -1,16 +1,19 @@
 'use client';
 
+import { useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useExpenses } from '@/hooks/useExpenses';
 import SummaryCard from '@/components/ui/SummaryCard';
 import ExpenseList from '@/components/ui/ExpenseList';
+import WeekSelector from '@/components/ui/WeekSelector';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 import Link from 'next/link';
 
 export default function ResumenPage() {
   const { user, loading } = useAuth();
-  const { summary, expenses, loading: expensesLoading } = useExpenses();
+  const [selectedWeek, setSelectedWeek] = useState<Date | null>(null);
+  const { summary, expenses, loading: expensesLoading, partnerName, partnerPhotoURL } = useExpenses(selectedWeek);
   const router = useRouter();
 
   useEffect(() => {
@@ -64,18 +67,21 @@ export default function ResumenPage() {
   }
 
   const userName = user.displayName || user.email?.split('@')[0] || 'Tú';
-  const partnerName = 'Tu pareja'; // TODO: Obtener nombre real de la pareja
+  const userPhotoURL = user.photoURL;
 
   return (
     <div className="min-h-screen flex flex-col p-6 pb-32">
       {/* Header */}
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold text-[#F4F1E8] mb-2">
-          Resumen
-        </h1>
-        <p className="text-[#8E887B]">
-          Esta semana
-        </p>
+      <div className="mb-6 flex items-start justify-between">
+        <div>
+          <h1 className="text-3xl font-bold text-[#F4F1E8] mb-2">
+            Resumen
+          </h1>
+          <p className="text-[#8E887B]">
+            {selectedWeek ? 'Semana seleccionada' : 'Todas las semanas'}
+          </p>
+        </div>
+        <WeekSelector onSelectWeek={setSelectedWeek} />
       </div>
 
       {/* Resumen de la semana */}
@@ -102,7 +108,9 @@ export default function ResumenPage() {
           expenses={expenses}
           currentUserId={user.uid}
           currentUserName={userName}
+          currentUserPhotoURL={userPhotoURL}
           partnerName={partnerName}
+          partnerPhotoURL={partnerPhotoURL}
         />
       </div>
 

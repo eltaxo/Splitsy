@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useAuth } from './useAuth';
-import { getWeekStart, getPendingSettlement } from '@/lib/firestore';
+import { getWeekStart, getPendingSettlement, getUser } from '@/lib/firestore';
 import { collection, getDocs, query, where, orderBy } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 
@@ -15,10 +15,12 @@ export interface ExpenseSummary {
   isSettled: boolean;
 }
 
-export function useExpenses() {
+export function useExpenses(selectedWeek?: Date | null) {
   const { user } = useAuth();
   const [summary, setSummary] = useState<ExpenseSummary | null>(null);
   const [expenses, setExpenses] = useState<any[]>([]);
+  const [partnerName, setPartnerName] = useState<string>('Tu pareja');
+  const [partnerPhotoURL, setPartnerPhotoURL] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -30,32 +32,64 @@ export function useExpenses() {
     const fetchExpenses = async () => {
       setLoading(true);
       try {
-        const weekStart = getWeekStart();
+        // Usar la semana seleccionada o null para todos los gastos
+        const weekStart = selectedWeek !== undefined ? selectedWeek : null;
         const userIds = [user.uid, user.partnerId];
 
-        // Obtener gastos de la semana (versión temporal sin orderBy para evitar índice)
+        console.log('📅 Fetching expenses with weekStart:', weekStart);
+        console.log('👤 User IDs:', userIds);
+
+        // Obtener datos de la pareja
+        if (user.partnerId) {
+          const partnerData = await getUser(user.partnerId);
+          if (partnerData) {
+            setPartnerName(partnerData.name);
+            setPartnerPhotoURL(partnerData.photoURL || null);
+          }
+        }
+
+        // Obtener gastos
         const expensesRef = collection(db, 'expenses');
         let q;
 
-        try {
-          // Intentar con orderBy primero (cuando el índice esté listo)
-          q = query(
-            expensesRef,
-            where('paidBy', 'in', userIds),
-            where('weekStart', '==', weekStart),
-            orderBy('createdAt', 'desc')
-          );
-        } catch (indexError) {
-          // Si el índice no está listo, usar sin orderBy
-          console.warn('Índice no listo, usando consulta sin ordenamiento');
-          q = query(
-            expensesRef,
-            where('paidBy', 'in', userIds),
-            where('weekStart', '==', weekStart)
-          );
+        if (weekStart) {
+          // Filtro por semana específica
+          try {
+            q = query(
+              expensesRef,
+              where('paidBy', 'in', userIds),
+              where('weekStart', '==', weekStart),
+              orderBy('createdAt', 'desc')
+            );
+          } catch (indexError) {
+            console.warn('Índice no listo, usando consulta sin ordenamiento');
+            q = query(
+              expensesRef,
+              where('paidBy', 'in', userIds),
+              where('weekStart', '==', weekStart)
+            );
+          }
+        } else {
+          // Todos los gastos (sin filtro de semana)
+          try {
+            q = query(
+              expensesRef,
+              where('paidBy', 'in', userIds),
+              orderBy('createdAt', 'desc')
+            );
+          } catch (indexError) {
+            console.warn('Índice no listo, usando consulta sin ordenamiento');
+            q = query(
+              expensesRef,
+              where('paidBy', 'in', userIds)
+            );
+          }
         }
 
         const querySnapshot = await getDocs(q);
+        console.log('🔍 Query snapshot size:', querySnapshot.size);
+        console.log('🔍 Query result:', querySnapshot);
+
         const expensesData = querySnapshot.docs.map((doc) => {
           const data = doc.data();
           return {
@@ -76,6 +110,7 @@ export function useExpenses() {
         });
 
         setExpenses(expensesData);
+        console.log('💰 Expenses data:', expensesData);
 
         // Calcular totales
         const userExpenses = expensesData.filter((e) => e.paidBy === user.uid);
@@ -101,11 +136,11 @@ export function useExpenses() {
         } else if (userDebt > 0) {
           // Usuario debe a pareja
           debtor = user.displayName || user.email?.split('@')[0] || 'Tú';
-          creditor = 'Tu pareja';
+          creditor = partnerName;
           debt = userDebt;
         } else {
           // Pareja debe a usuario
-          debtor = 'Tu pareja';
+          debtor = partnerName;
           creditor = user.displayName || user.email?.split('@')[0] || 'Tú';
           debt = partnerDebt;
         }
@@ -119,18 +154,21 @@ export function useExpenses() {
           isSettled,
         });
       } catch (error) {
-        console.error('Error al obtener gastos:', error);
+        console.error('❌ Error al obtener gastos:', error);
+        console.error('Error details:', error);
       } finally {
         setLoading(false);
       }
     };
 
     fetchExpenses();
-  }, [user]);
+  }, [user, selectedWeek]);
 
   return {
     summary,
     expenses,
     loading,
+    partnerName,
+    partnerPhotoURL,
   };
 }
