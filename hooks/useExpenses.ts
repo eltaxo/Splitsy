@@ -36,9 +36,6 @@ export function useExpenses(selectedWeek?: Date | null) {
         const weekStart = selectedWeek !== undefined ? selectedWeek : null;
         const userIds = [user.uid, user.partnerId];
 
-        console.log('📅 Fetching expenses with weekStart:', weekStart);
-        console.log('👤 User IDs:', userIds);
-
         // Obtener datos de la pareja
         if (user.partnerId) {
           const partnerData = await getUser(user.partnerId);
@@ -87,8 +84,6 @@ export function useExpenses(selectedWeek?: Date | null) {
         }
 
         const querySnapshot = await getDocs(q);
-        console.log('🔍 Query snapshot size:', querySnapshot.size);
-        console.log('🔍 Query result:', querySnapshot);
 
         const expensesData = querySnapshot.docs.map((doc) => {
           const data = doc.data();
@@ -110,7 +105,6 @@ export function useExpenses(selectedWeek?: Date | null) {
         });
 
         setExpenses(expensesData);
-        console.log('💰 Expenses data:', expensesData);
 
         // Calcular totales
         const userExpenses = expensesData.filter((e) => e.paidBy === user.uid);
@@ -154,8 +148,7 @@ export function useExpenses(selectedWeek?: Date | null) {
           isSettled,
         });
       } catch (error) {
-        console.error('❌ Error al obtener gastos:', error);
-        console.error('Error details:', error);
+        console.error('Error al obtener gastos:', error);
       } finally {
         setLoading(false);
       }
